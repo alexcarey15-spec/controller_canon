@@ -21,8 +21,8 @@ BTN_OPTIONS = 9    # -> joint mode
 BTN_HOME    = 10   # PS button -> homing
 
 # tuning - full stick deflection equals these magnitudes
-JOINT_SPEED = 20.0   # rad/s
-CART_SPEED  = 0.020  # m/s (1 mm per 20Hz tick)
+JOINT_SPEED = 20.0   # rad/s (caps in joint_state_node, so this just needs to be >= cap)
+CART_SPEED  = 0.060  # m/s (3 mm per 20Hz tick at full stick)
 
 
 class JoyInputNode(Node):

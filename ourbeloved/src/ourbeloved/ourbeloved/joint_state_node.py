@@ -41,7 +41,7 @@ class JointStateNode(Node):
                 f"/joint_command expected 6 vals, got {len(msg.data)}")
             return
         joints_deg = [math.degrees(v) for v in msg.data]
-        self.xarm.set_joints(joints_deg, "high_acc", [30]*6)
+        self.xarm.set_joints(joints_deg, "high_acc", [60]*6)  # deg/s per joint
 
     def home_callback(self, msg):
         self.get_logger().info("homing")
