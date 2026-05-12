@@ -14,9 +14,9 @@ class JointStateNode(Node):
         super().__init__("joint_state_node")
         self.xarm = XArm()
 
-        # publish at 5Hz
+        # publish at 20Hz to match cannon_node control rate (smoother tracking)
         self.publisher = self.create_publisher(JointState, "joint_state", 10)
-        self.timer = self.create_timer(0.2, self.timer_callback)
+        self.timer = self.create_timer(0.05, self.timer_callback)
         self.angles = [0.0] * 6
 
         # commands from the brain

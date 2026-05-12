@@ -20,6 +20,7 @@ CONTROL_RATE    = 20.0   # Hz
 GOAL_TOLERANCE  = 0.1    # degrees - assignment requires <0.1 deg
 GOAL_HOLD_SECS  = 2.0    # seconds within tolerance to count as 'achieved'
 CART_DEADZONE_MM = 0.5   # ignore tiny cart deltas
+JOY_TIMEOUT     = 0.3    # seconds - zero velocities if no joy update arrives
 
 
 class CannonNode(Node):
@@ -33,6 +34,7 @@ class CannonNode(Node):
         self._goal_hold_time = 0.0
         self.cmd_joint_vel = [0.0] * 6      # rad/s
         self.cmd_cart_vel = (0.0, 0.0, 0.0)  # m/s
+        self.last_cmd_time = None            # set on first cmd; used for joy timeout
 
         # subs
         self.create_subscription(JointState, "joint_state",
@@ -75,9 +77,11 @@ class CannonNode(Node):
     def joint_vel_callback(self, msg):
         if len(msg.data) == 6:
             self.cmd_joint_vel = list(msg.data)
+            self.last_cmd_time = self.get_clock().now()
 
     def cart_vel_callback(self, msg):
         self.cmd_cart_vel = (msg.x, msg.y, msg.z)
+        self.last_cmd_time = self.get_clock().now()
 
     # helpers --------------------------------------------------------------
     def publish_joint_command(self, joints_deg):
@@ -91,6 +95,16 @@ class CannonNode(Node):
         # precise goal always wins over manual input
         if self.joint_goals is not None:
             self.do_joint_goal()
+            return
+
+        # failsafe: if joy stops publishing, zero the velocities so the arm
+        # doesnt keep drifting on whatever the last stick value was
+        if self.last_cmd_time is None:
+            return  # no joy yet at all
+        age = (self.get_clock().now() - self.last_cmd_time).nanoseconds / 1e9
+        if age > JOY_TIMEOUT:
+            self.cmd_joint_vel = [0.0] * 6
+            self.cmd_cart_vel = (0.0, 0.0, 0.0)
             return
 
         if self.mode == "joint":
