@@ -28,12 +28,14 @@ setup(
         ],
     },
     entry_points={
-        'console_scripts': 
+        'console_scripts':
         [
          "cannon_node = ourbeloved.cannon_node:main",
          "cartesian_ptp_node = ourbeloved.cartesian_ptp_node:main",
          "wx250s_kinematics = ourbeloved.wx250s_kinematics:main",
          "joint_state_node = ourbeloved.joint_state_node:main",
+         "joy_input_node = ourbeloved.joy_input_node:main",
+         "pose_node = ourbeloved.pose_node:main",
         ],
     },
 )
