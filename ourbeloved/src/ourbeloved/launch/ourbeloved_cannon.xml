@@ -1,0 +1,29 @@
+<launch>
+  <!-- 
+       ourbeloved_cannon.xml
+       Runs on the CANNON computer.
+       
+      cartesian_ptp_node  - action server for cartesian moves
+      cannon_node  - subscribes to /joy and /joint_goals, drives the arm
+       -->
+
+  <!-- ── cartesian_ptp_node ────────────────────────────────────── -->
+  <!-- Action server that accepts CartesianPTP goals and executes
+       them via segmented IK, used by cannon_node in cartesian mode. -->
+  
+  <node
+    pkg="ourbeloved" exec="cartesian_ptp_node" name="cartesian_ptp_node" output="screen"
+  />
+
+   <node pkg="ourbeloved" exec="joint_state_node" name="joint_state_node" output="screen" />
+
+  <!-- === Cannon node === -->
+  <!-- This single node:
+         • Subscribes to /joy  (sensor_msgs/Joy) – PS4 controller state
+         • Subscribes to /joint_goals  (std_msgs/Float64MultiArray) – precise goals
+         • Drives the arm via the xarmclient Python API
+         • Publishes /fire  (std_msgs/Bool) when R2 is pressed/released  -->
+  <node
+    pkg="ourbeloved" exec="cannon_node" name="cannon_node" output="screen" />
+
+</launch>

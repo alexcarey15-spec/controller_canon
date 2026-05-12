@@ -1,0 +1,6 @@
+
+float64[6] joint_goal
+---
+bool success
+---
+float64[6] joint_present

@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="wx250s">
+
+  <!-- ARM length is 250mm (used for distances)-->
+  <xacro:property name="ARM_len" value="0.25" />
+
+  <!-- Base octogon is link 1 (has a height of 110.25)-->
+  <xacro:property name="L1" value="0.08" />
+  <xacro:property name="L1diameter" value="0.093" />
+
+  <!-- First 250mm arm is link 2 (but only height 110mm from base)-->
+  <xacro:property name="L2" value="0.11025" />
+  <xacro:property name="L2radius" value="0.040" />
+
+  <!-- 50mm 90 degree curve is link 3-->
+  <xacro:property name="L3" value="0.050" />
+  <xacro:property name="L3radius" value="0.0634" />
+
+  <!-- Second 171.55mm arm is link 4 (full arm length minus the rotating part)-->
+  <xacro:property name="L4" value="0.17155" />
+  <xacro:property name="L4radius" value="0.040" />
+
+  <!-- 78.45mm arm is link 5-->
+  <xacro:property name="L5" value="0.07845" />
+  <xacro:property name="L5radius" value="0.0634" />
+
+  <!-- 65mm rotating arm is link 6-->
+  <xacro:property name="L6" value="0.065" />
+  <xacro:property name="L6radius" value="0.040" />
+
+  <!-- End Effector is link 7-->
+  <xacro:property name="eesize" value="0.04315" />
+
+  <!-- Joint Values -->
+  <xacro:property name="J1_Waist_MIN" value="-${pi}" />
+  <xacro:property name="J1_Waist_MAX" value="${pi}" />
+
+  <xacro:property name="J2_Shoulder_MIN" value="-${0.6*pi}" />
+  <xacro:property name="J2_Shoulder_MAX" value="${0.633*pi}" />
+
+  <xacro:property name="J3_Elbow_MIN" value="-${0.683*pi}" />
+  <xacro:property name="J3_Elbow_MAX" value="${0.511*pi}" />
+
+  <xacro:property name="J4_ForearmRoll_MIN" value="-${pi}" />
+  <xacro:property name="J4_ForearmRoll_MAX" value="${pi}" />
+
+  <xacro:property name="J5_WristAngle_MIN" value="-${0.55*pi}" />
+  <xacro:property name="J5_WristAngle_MAX" value="${0.683*pi}" />
+
+  <xacro:property name="J6_WristRotate_MIN" value="-${pi}" />
+  <xacro:property name="J6_WristRotate_MAX" value="${pi}" />
+
+  <material name="blue">
+    <color rgba="0.2 0.4 0.65 1" />
+  </material>
+
+  <material name="yellow">
+    <color rgba="1 0.85 0 1" />
+  </material>
+
+  <material name="black">
+    <color rgba="0.1 0.1 0.1 1" />
+  </material>
+
+
+   <!-- LINK SETUP -->
+  <link name="world" />
+
+  <link name="Octo_base_link1">
+    <visual name="Octo_base_link1">
+        <origin xyz="0 0 -${L1/2}" />
+        <geometry>
+          <cylinder radius="${L1diameter/2}" length= "${L1}" />
+        </geometry>
+        <material name="black" />
+    </visual>
+  </link>
+  
+  <link name="Arm_link2">
+    <visual name="link2">
+      <origin xyz="0 0 ${(L2/2)+(L1/1.5)}" />
+      <geometry>
+        <box size="${L2radius} ${L2radius} ${(L2/2)+ARM_len}" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+  </link>
+
+  <link name="shoulder_elbow_connector">
+    <visual name="S.E_con">
+      <origin xyz="0.025 0 0" />
+      <geometry>
+        <box size="${L3} ${L3radius} ${L2radius}" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+  </link>
+
+  <link name="Curve_link3">
+    <visual name="link3">
+      <origin xyz="${L4/2} 0 0" />
+      <geometry>
+        <box size="${L4} ${L2radius} ${L2radius}" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+  </link>
+
+  <link name="SecondArm_link4">
+    <visual name="link4">
+      <origin xyz="${L5/2} 0 0" />
+      <geometry>
+        <box size="${L5} ${L4radius} ${L4radius}" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+  </link>
+
+  <link name="ThirdArm_link5">
+    <visual name="link5">
+      <origin xyz="${L6/2} 0 0" />
+      <geometry>
+        <box size="${L5} ${L5radius} ${L5radius}" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+  </link>
+
+  <link name="Wrist_link6">
+    <visual name="link6">
+      <origin xyz="${eesize/2} 0 0" />
+      <geometry>
+        <box size="${L6} ${L6radius} ${L6radius}" />
+      </geometry>
+      <material name="blue" />
+    </visual>
+  </link>
+ 
+  <link name="ee">
+    <visual name="ee">
+      <origin xyz="0 0 0" />
+      <geometry>
+        <box size="${eesize} ${eesize} ${eesize}" />
+      </geometry>
+      <material name="yellow" />
+    </visual>
+  </link>
+
+
+  <!-- JOINT SETUP -->
+  <!--
+  <joint name="octo_base_joint" type="fixed">
+    <parent link="world" />
+    <child link="Octo_base_link1" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  -->
+
+  <joint name="J1_Waist" type="revolute">
+    <parent link="world" />
+    <child link="Octo_base_link1" />
+    <origin xyz="0 0 ${L1}" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="${J1_Waist_MIN}" upper="${J1_Waist_MAX}" effort="1" velocity="1" />
+  </joint>
+
+  <joint name="J2_Shoulder" type="revolute">
+    <parent link="Octo_base_link1" />
+    <child link="Arm_link2" />
+    <origin xyz="0 0 ${(L2-L1)}" rpy="0 0 0" />
+    <axis xyz="0 -1 0" />
+    <limit lower="${J2_Shoulder_MIN}" upper="${J2_Shoulder_MAX}" effort="1" velocity="1" />
+  </joint>
+
+  <joint name="Shoulder_Elbow_connection" type="fixed">
+    <parent link="Arm_link2" />
+    <child link="shoulder_elbow_connector" />
+    <origin xyz="${L3-0.05} 0 ${ARM_len}" rpy="0 0 0" />
+    <axis xyz="0 -1 0" />
+  </joint>
+
+  <joint name="J3_Elbow" type="revolute">
+    <parent link="Arm_link2" />
+    <child link="Curve_link3" />
+    <origin xyz="${L3} 0 ${ARM_len}" rpy="0 0 0" />
+    <axis xyz="0 -1 0" />
+    <limit lower="${J3_Elbow_MIN}" upper="${J3_Elbow_MAX}" effort="1" velocity="1" />
+  </joint>
+
+  <joint name="J4_ForearmRoll" type="revolute">
+    <parent link="Curve_link3" />
+    <child link="SecondArm_link4" />
+    <origin xyz="${L4} 0 0" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="${J4_ForearmRoll_MIN}" upper="${J4_ForearmRoll_MAX}" effort="1" velocity="1" />
+  </joint>
+
+  <joint name="J5_WristAngle" type="revolute">
+    <parent link="SecondArm_link4" />
+    <child link="ThirdArm_link5" />
+    <origin xyz="${L5} 0 0" rpy="0 0 0" />
+    <axis xyz="0 -1 0" />
+    <limit lower="${J5_WristAngle_MIN}" upper="${J5_WristAngle_MAX}" effort="1" velocity="1" />
+  </joint>
+
+  <joint name="J6_WristRotate" type="revolute">
+    <parent link="ThirdArm_link5" />
+    <child link="Wrist_link6" />
+    <origin xyz="${L6} 0 0" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="${J6_WristRotate_MIN}" upper="${J6_WristRotate_MAX}" effort="1" velocity="1" />
+  </joint>
+
+  <joint name="ee_in_link6" type="fixed">
+    <parent link="Wrist_link6" />
+    <child link="ee" />
+    <origin xyz="${eesize} 0 0" rpy="0 0 0" />
+  </joint>
+
+</robot>

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="filename" default="wx250s_viz"/>
+
+  <node pkg="robot_state_publisher" exec="robot_state_publisher">
+    <param name="robot_description"
+           value="$(command 'xacro $(find-pkg-share wx250s_viz)/urdf/$(var filename).urdf.xacro')" />
+  </node>
+
+  <node pkg="joint_state_publisher" exec="joint_state_publisher">
+    <param name="source_list" value="['joint_state']" />
+  </node>
+
+  <node pkg="rviz2" exec="rviz2"
+        args="-d $(find-pkg-share wx250s_viz)/config/$(var filename).rviz" />
+</launch>

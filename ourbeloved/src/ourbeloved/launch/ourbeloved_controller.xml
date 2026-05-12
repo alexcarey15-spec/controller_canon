@@ -1,0 +1,61 @@
+<launch>
+  <!-- 
+  <executable cmd= "/usr/bin/env bash -c xarmserver_sim" output="screen"/>
+  -->
+  <!-- ================================================================
+       ourbeloved_controller.xml
+       Runs on the CONTROLLER computer (the one with the PS4 dongle/cable).
+
+       Responsibilities:
+        Publish PlayStation controller state /joy  (joy_node)
+        Visualise the robot in RViz2 based on joint states coming
+            from the cannon computer over the network
+       ================================================================ -->
+
+  <!-- Arguments  -->
+  <arg name="rvizconfig"
+       default="$(find-pkg-share ourbeloved)/config/ourbeloved.rviz"/>
+  
+
+  <!-- joy device  -->
+  <arg name="joy_dev"       default="/dev/input/js0"/>
+  <!-- Deadzone for analogue sticks (0.0 – 1.0) -->
+  <arg name="joy_deadzone"  default="0.05"/>
+   
+
+  <!--  joy_node – publishes PS4 controller state  -->
+  <!-- Publishes sensor_msgs/Joy on /joy at ~50 Hz.
+       Button/axis mappings are left at defaults; tune joy_deadzone and
+       the cannon_node interpreter to suit your controller. -->
+  <node
+    pkg="joy" exec="joy_node" name="joy_node" output="screen" >
+    <param name="device_id"   value="0"/>
+    <param name="deadzone"    value="$(var joy_deadzone)"/>
+    <param name="autorepeat_rate" value="20.0"/>
+  </node>
+
+  <!--  Robot State Publisher  -->
+  <!-- Converts /wx250s/joint_states (coming from cannon computer over
+       the ROS2 network) into TF transforms so RViz2 can render the arm. -->
+  <node
+    pkg="robot_state_publisher"
+    exec="robot_state_publisher"
+  >
+    <!-- Load the URDF from the milestone 5 package -->
+    <param name="robot_description" value="$(command 'xacro $(find-pkg-share ourbeloved)/urdf/wx250s_viz.urdf.xacro')"/>
+  </node>
+  
+  <node pkg="joint_state_publisher" exec="joint_state_publisher">
+    <param name="source_list" value="['joint_state']" />
+  </node>
+
+  <!-- RViz2  -->
+  <node
+    pkg="rviz2"
+    exec="rviz2"
+    name="rviz2"
+    output="screen"
+    args="-d $(var rvizconfig)"
+  />
+
+</launch>
