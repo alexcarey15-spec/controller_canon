@@ -21,6 +21,7 @@ GOAL_TOLERANCE  = 0.1    # degrees - assignment requires <0.1 deg
 GOAL_HOLD_SECS  = 2.0    # seconds within tolerance to count as 'achieved'
 CART_DEADZONE_MM = 0.5   # ignore tiny cart deltas
 JOY_TIMEOUT     = 0.3    # seconds - zero velocities if no joy update arrives
+VEL_SMOOTH_ALPHA = 0.4   # 1.0 = no smoothing; lower = smoother but laggier ramp
 
 
 class CannonNode(Node):
@@ -76,11 +77,18 @@ class CannonNode(Node):
 
     def joint_vel_callback(self, msg):
         if len(msg.data) == 6:
-            self.cmd_joint_vel = list(msg.data)
+            # EMA smooth so a sudden stick flick doesnt translate into a step
+            # change in velocity (which xarm tracks as a jerk)
+            a = VEL_SMOOTH_ALPHA
+            self.cmd_joint_vel = [a * n + (1 - a) * o
+                                  for n, o in zip(msg.data, self.cmd_joint_vel)]
             self.last_cmd_time = self.get_clock().now()
 
     def cart_vel_callback(self, msg):
-        self.cmd_cart_vel = (msg.x, msg.y, msg.z)
+        a = VEL_SMOOTH_ALPHA
+        new = (msg.x, msg.y, msg.z)
+        self.cmd_cart_vel = tuple(a * n + (1 - a) * o
+                                  for n, o in zip(new, self.cmd_cart_vel))
         self.last_cmd_time = self.get_clock().now()
 
     # helpers --------------------------------------------------------------
